@@ -173,7 +173,7 @@ class BaseLM(LM):
 
     def loglikelihood(self, requests):
         new_reqs = []
-        for context, continuation in requests:
+        for context, continuation in tqdm(requests, desc="Preparing requests"):
             if context == "":
                 # end of text as context
                 context_enc = [self.eot_token_id]
@@ -299,7 +299,6 @@ class BaseLM(LM):
             # because vectorizing is annoying, we first convert each (context, continuation) pair to padded
             # tensors, then we pack them together into a batch, call the model, and then pick it all apart
             # again because vectorizing is annoying
-
             for _, context_enc, continuation_enc in chunk:
                 # sanity check
                 assert len(context_enc) > 0
