@@ -4,7 +4,7 @@ import json
 import logging
 import fnmatch
 import os
-
+from pathlib import Path
 
 if os.path.exists('/mnt/localssd/'):
     os.environ['TRANSFORMERS_CACHE'] = '/mnt/localssd/cache'
@@ -48,7 +48,7 @@ def parse_args():
     parser.add_argument("--tasks", default='arc_vi,mmlu_vi,hellaswag_vi,truthfulqa_vi')
     parser.add_argument("--provide_description", action="store_true")
     # parser.add_argument("--num_fewshot", type=int, default=0)
-    parser.add_argument("--batch_size", type=int, default=1)
+    parser.add_argument("--batch_size", type=str, default="1")
     parser.add_argument("--device", type=str, default='cuda')
     parser.add_argument("--output_path", default=None)
     parser.add_argument("--limit", type=float, default=None,
@@ -81,6 +81,12 @@ def pattern_match(patterns, source_list):
 def main():
     args = parse_args()
 
+    # In case of "auto" values we need to allow for str
+    try:
+        args.batch_size = int(args.batch_size)
+    except:
+        pass
+
     assert not args.provide_description  # not implemented
 
     if args.limit:
@@ -90,17 +96,14 @@ def main():
     task_names = args.tasks.split(',')
     task_names = pattern_match(task_names, tasks.ALL_TASKS)
 
-    output_filename = f'{args.task_alias}-{args.model_alias}.json'
-    output_file = os.path.join('logs', output_filename)
-    existing_output_files = glob.glob('logs/*.json') + glob.glob('logs/*/*.json')
-    existing_filenames = [os.path.basename(x) for x in existing_output_files]
+    output_filename = f'logs/{args.task_alias}_{args.model_alias}.json'
 
-    if output_filename in existing_filenames:
-        i = existing_filenames.index(output_filename)
-        print(f"Skipping {args.task_alias}. Log file exists at {existing_output_files[i]}")
-        return
+    if Path(output_filename).exists():
+        print(f"Skipping {args.task_alias} - {args.model_alias}. Log file exists at {output_filename}")
+        exit()
 
     print(f"Selected Tasks: {task_names}")
+    print(f"Will write results to {output_filename}")
 
     description_dict = {}
     if args.description_dict_path:
@@ -123,13 +126,9 @@ def main():
     )
 
     dumped = json.dumps(results, indent=2)
-    with open(output_file, 'w') as f:
+    with open(output_filename, 'w', encoding="utf-8") as f:
         json.dump(results, f, indent=2, ensure_ascii=False)
 
-    if args.output_path:
-        os.makedirs(os.path.dirname(args.output_path), exist_ok=True)
-        with open(args.output_path, "w") as f:
-            f.write(dumped)
     print(evaluator.make_table(results))
 
 
