@@ -85,6 +85,7 @@ class HuggingFaceAutoLM(BaseLM):
             device: Optional[Union[int, str]] = "cuda",
             peft: str = None,
             load_in_8bit: Optional[bool] = False,
+            load_in_4bit: bool = False,
             trust_remote_code: Optional[bool] = False,
     ):
         """Initializes a HuggingFace `AutoModel` and `AutoTokenizer` for evaluation.
@@ -191,6 +192,7 @@ class HuggingFaceAutoLM(BaseLM):
                 offload_folder,
             )
         model_kwargs["load_in_8bit"] = load_in_8bit
+        model_kwargs["load_in_4bit"] = load_in_4bit
         self.model = self._create_auto_model(
             pretrained=pretrained,
             trust_remote_code=trust_remote_code,
@@ -231,6 +233,7 @@ class HuggingFaceAutoLM(BaseLM):
             max_memory: Optional[dict] = None,
             offload_folder: Optional[str] = None,
             load_in_8bit: Optional[bool] = False,
+            load_in_4bit: Optional[bool] = False,
             trust_remote_code: Optional[bool] = False,
             torch_dtype: Optional[Union[str, torch.dtype]] = None,
     ) -> transformers.AutoModel:
@@ -242,6 +245,7 @@ class HuggingFaceAutoLM(BaseLM):
             max_memory=max_memory,
             offload_folder=offload_folder,
             load_in_8bit=load_in_8bit,
+            load_in_4bit=load_in_4bit,
             trust_remote_code=trust_remote_code,
             torch_dtype=torch_dtype,
         )
@@ -364,6 +368,7 @@ class HuggingFaceAutoLM(BaseLM):
         return self.tokenizer(
             strings,
             padding=True,
+            truncation=True,
             add_special_tokens=self.add_special_tokens,
             return_tensors="pt",
         )
@@ -611,6 +616,7 @@ class AutoSeq2SeqLM(HuggingFaceAutoLM):
             disable_tqdm: Optional[bool] = False,
     ) -> List[Tuple[float, bool]]:
         results = []
+
         for chunk in tqdm(
                 requests, total=math.ceil(len(requests)), disable=disable_tqdm
         ):
