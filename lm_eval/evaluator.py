@@ -221,7 +221,6 @@ def evaluate(
                 print(
                     f"Task: {task_name}; document {doc_id}; context prompt (starting on next line):\n{ctx}\n(end of prompt on previous line)"
                 )
-                print("Requests:", reqs)
 
             if not isinstance(reqs, (list, tuple)):
                 reqs = [reqs]
@@ -252,13 +251,14 @@ def evaluate(
     process_res_queue = collections.defaultdict(list)
 
     # execute each type of request
+    print("Processing requests", flush=True)
     for reqtype, reqs in requests.items():
         # TODO: right now, this code runs multiple separate LM requests for multiple Requests differing
         #       only in index. We could implement some kind of caching, but that would be more of a band-aid
         #       solution. we could also implement some kind of auto-grouping here;
         #       they should end up next to each other.
 
-        print("Running", reqtype, "requests")
+        print(f"Processing request {reqtype}", flush=True)
         resps = getattr(lm, reqtype)([req.args for req in reqs])
         resps = [
             x if req.index is None else x[req.index] for x, req in zip(resps, reqs)
