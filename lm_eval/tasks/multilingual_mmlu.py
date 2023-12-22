@@ -77,11 +77,11 @@ class GeneralHendrycksTest(MultipleChoiceTask):
             D. <choice4>
             Answer:
             """
-            prompt = "Question: " + doc["question"] + "\nChoices:\n"
+            prompt = "Vraag: " + doc["question"] + "\nKeuzes:\n"
             prompt += "".join(
                 [f"{key}. {choice}\n" for key, choice in zip(keys, doc["choices"])]
             )
-            prompt += "Answer:"
+            prompt += "Antwoord:"
             return prompt
 
         keys = ["A", "B", "C", "D"]

@@ -78,7 +78,7 @@ class MultilingualARC(MultipleChoiceTask):
         # NOTE:
         out_doc = {
             "id": doc["id"],
-            "query": "Question: " + doc["question"] + "\nAnswer:",
+            "query": "Vraag: " + doc["question"] + "\nAntwoord:",
             "choices": doc["choices"],
             "gold": ["A", "B", "C", "D", "E"].index(doc["answerKey"]),
         }
